@@ -1,0 +1,54 @@
+#!/bin/sh
+#
+# Copyright (C) 2019 TDT AG <development@tdt.de>
+#
+# This is free software, licensed under the GNU General Public License v2.
+# See https://www.gnu.org/licenses/gpl-2.0.txt for more information.
+#
+
+main() {
+	local table="$1"
+	local base_dir="$2"
+
+	mkdir -p ${base_dir}/build
+
+	ssh root@router-apu3 "iptables-save > /tmp/iptables-save.txt"
+	scp root@router-apu3:/tmp/iptables-save.txt "${base_dir}/build/"
+	ssh root@router-apu3 "rm /tmp/iptables-save.txt"
+
+	cat "${base_dir}/build/iptables-save.txt" | \
+		"${base_dir}/libapp-iptables2dot-perl/bin/iptables2dot" \
+		--tables "${table}" \
+		--add-optdef "dst-type" \
+		--add-optdef "helper" \
+		--add-optdef "set-xmark" \
+		--add-optdef "mark" \
+		--add-optdef "restore-mark" \
+		--add-optdef "nfmask" \
+		--add-optdef "ctmask" \
+		--add-optdef "save-mark" \
+		--add-optdef "length" \
+		--add-optdef "ports"  > \
+		"${base_dir}/build/iptables-${table}.dot"
+
+	sed -i 's/DOCKER-USER/DOCKER_USER/g' \
+		"${base_dir}/build/iptables-${table}.dot"
+
+	sed -i 's/DOCKER-ISOLATION-STAGE-1/DOCKER_ISOLATION_STAGE_1/g' \
+		"${base_dir}/build/iptables-${table}.dot"
+
+	sed -i 's/DOCKER-ISOLATION-STAGE-2/DOCKER_ISOLATION_STAGE_2/g' \
+		"${base_dir}/build/iptables-${table}.dot"
+
+	dot -Tpdf \
+		"${base_dir}/build/iptables-${table}.dot" \
+		-o "${base_dir}/build/iptables-${table}.pdf"
+
+	dot -Tpng \
+		"${base_dir}/build/iptables-${table}.dot" \
+		-o "${base_dir}/build/iptables-${table}.png"
+
+	evince "${base_dir}/build/iptables-${table}.pdf"
+}
+
+main $@
