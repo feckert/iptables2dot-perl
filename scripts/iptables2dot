@@ -9,15 +9,16 @@
 main() {
 	local table="$1"
 	local base_dir="$2"
+	local remote="$3"
 
 	mkdir -p ${base_dir}/build
 
-	ssh root@router-apu3 "iptables-save > /tmp/iptables-save.txt"
-	scp root@router-apu3:/tmp/iptables-save.txt "${base_dir}/build/"
-	ssh root@router-apu3 "rm /tmp/iptables-save.txt"
+	ssh root@${remote} "iptables-save > /tmp/iptables-save.txt"
+	scp root@${remote}:/tmp/iptables-save.txt "${base_dir}/build/"
+	ssh root@${remote} "rm /tmp/iptables-save.txt"
 
 	cat "${base_dir}/build/iptables-save.txt" | \
-		"${base_dir}/libapp-iptables2dot-perl/bin/iptables2dot" \
+		"${base_dir}/build/deb/libapp-iptables2dot-perl/bin/iptables2dot" \
 		--tables "${table}" \
 		--add-optdef "dst-type" \
 		--add-optdef "helper" \
