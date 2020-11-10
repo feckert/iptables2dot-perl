@@ -11,6 +11,7 @@ default: help
 
 help:
 	@echo "Build perl App::Iptables2Dot"
+	@echo "make <filter|nat|mangle> REMOTE='192.168.0.2'"
 
 build-init:
 	git submodule init

@@ -11,6 +11,11 @@ main() {
 	local base_dir="$2"
 	local remote="$3"
 
+	[ -z "$remote" ] && {
+		echo "Please add ssh remote"
+		exit 1
+	}
+
 	mkdir -p ${base_dir}/build
 
 	ssh root@${remote} "iptables-save > /tmp/iptables-save.txt"
